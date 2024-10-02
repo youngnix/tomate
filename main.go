@@ -6,5 +6,9 @@ import (
 )
 
 func main() {
-	fmt.Print("Hello, World!\n")
+	myApp := app.New()
+	appWindow := myApp.NewWindow("Tomate")
+
+	appWindow.SetContent(widget.NewLabel("Hello, World!"))
+	appWindow.ShowAndRun()
 }
