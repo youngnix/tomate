@@ -4,7 +4,7 @@ The necessity for this project arose when I noticed that most desktop timer appl
 
 ## Programmable timers
 
-Tomate stores your timers on an easy to read and modify TOML file.
+Tomate should store your timers on an easy to read and modify TOML file.
 
 ## Demands
 - Simplicity - The timer should be simple to use.
