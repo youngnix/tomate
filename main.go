@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
@@ -62,6 +63,9 @@ func main() {
 			break
 		}
 	})
+
+	countdown_label.Alignment = fyne.TextAlignCenter
+	start_pause_button.Alignment = widget.ButtonAlignCenter
 
 	appWindow.SetContent(
 		container.New(layout.NewCenterLayout(),
