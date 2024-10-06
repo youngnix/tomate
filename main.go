@@ -35,6 +35,17 @@ func main() {
 		return
 	}
 
+	stop_icon, err := fyne.LoadResourceFromPath("res/stop_icon.png")
+
+	if err != nil {
+		return
+	}
+	skip_icon, err := fyne.LoadResourceFromPath("res/skip_icon.png")
+
+	if err != nil {
+		return
+	}
+
 	var countdown int
 	state := TIMER_STATE_PAUSED
 
@@ -51,7 +62,7 @@ func main() {
 
 	SetCountdown(60 * 60)
 
-	var start_pause_button *widget.Button
+	var start_pause_button, skip_button, stop_button *widget.Button
 	countdown_label := canvas.NewText("", color.White)
 
 	countdown_label.TextSize = 48
@@ -87,12 +98,17 @@ func main() {
 		}
 	})
 
+	skip_button = widget.NewButtonWithIcon("", skip_icon, func() {})
+	stop_button = widget.NewButtonWithIcon("", stop_icon, func() {})
+
 	appWindow.SetContent(
 		container.New(layout.NewCenterLayout(),
 			container.New(layout.NewVBoxLayout(),
 				countdown_label,
 				container.New(layout.NewHBoxLayout(),
 					start_pause_button,
+					skip_button,
+					stop_button,
 				),
 			),
 		),
