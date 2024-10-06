@@ -75,7 +75,6 @@ func main() {
 		}
 	})
 
-	countdown_label.Alignment = fyne.TextAlignCenter
 	start_pause_button.Alignment = widget.ButtonAlignCenter
 
 	appWindow.SetContent(
