@@ -23,6 +23,18 @@ func main() {
 	myApp := app.New()
 	appWindow := myApp.NewWindow("Tomate")
 
+	start_icon, err := fyne.LoadResourceFromPath("res/start_icon.png")
+
+	if err != nil {
+		return
+	}
+
+	pause_icon, err := fyne.LoadResourceFromPath("res/pause_icon.png")
+
+	if err != nil {
+		return
+	}
+
 	var countdown int
 	state := TIMER_STATE_PAUSED
 
@@ -61,27 +73,27 @@ func main() {
 		}
 	}
 
-	start_pause_button = widget.NewButton("Start", func() {
+	start_pause_button = widget.NewButtonWithIcon("", start_icon, func() {
 		switch state {
 		case TIMER_STATE_PAUSED:
 			state = TIMER_STATE_RUNNING
-			start_pause_button.SetText("Pause")
+			start_pause_button.SetIcon(pause_icon)
 			go countdown_func()
 			break
 		case TIMER_STATE_RUNNING:
 			state = TIMER_STATE_PAUSED
-			start_pause_button.SetText("Start")
+			start_pause_button.SetIcon(start_icon)
 			break
 		}
 	})
-
-	start_pause_button.Alignment = widget.ButtonAlignCenter
 
 	appWindow.SetContent(
 		container.New(layout.NewCenterLayout(),
 			container.New(layout.NewVBoxLayout(),
 				countdown_label,
-				start_pause_button,
+				container.New(layout.NewHBoxLayout(),
+					start_pause_button,
+				),
 			),
 		),
 	)
