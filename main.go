@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
@@ -38,7 +40,16 @@ func main() {
 	SetCountdown(60 * 60)
 
 	var start_pause_button *widget.Button
-	countdown_label := widget.NewLabelWithData(countdown_string)
+	countdown_label := canvas.NewText("", color.White)
+
+	countdown_label.TextSize = 48
+	countdown_label.Alignment = fyne.TextAlignCenter
+
+	countdown_string.AddListener(binding.NewDataListener(func() {
+		newValue, _ := countdown_string.Get()
+		countdown_label.Text = newValue
+		countdown_label.Refresh()
+	}))
 
 	countdown_func := func() {
 		for range time.Tick(time.Second) {

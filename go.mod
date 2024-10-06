@@ -2,7 +2,10 @@ module youngnix.com/tomate
 
 go 1.23.1
 
-require fyne.io/fyne/v2 v2.5.1
+require (
+	fyne.io/fyne v1.4.3
+	fyne.io/fyne/v2 v2.5.1
+)
 
 require (
 	fyne.io/systray v1.11.0 // indirect
