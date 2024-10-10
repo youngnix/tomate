@@ -72,6 +72,16 @@ func main() {
 		countdown_string.Set(fmt.Sprintf("%02d:%02d", countdown/60, countdown%60))
 	}
 
+	NextCycle := func() {
+		if current_cycle.Next() != nil {
+			current_cycle = current_cycle.Next()
+		} else {
+			current_cycle = cycles.Front()
+		}
+
+		SetCountdown(current_cycle.Value.(Cycle).Countdown())
+	}
+
 	SetCountdown(current_cycle.Value.(Cycle).Countdown())
 
 	var start_pause_button, skip_button, stop_button *widget.Button
@@ -93,13 +103,7 @@ func main() {
 			}
 
 			if countdown == 0 {
-				if current_cycle.Next() != nil {
-					current_cycle = current_cycle.Next()
-				} else {
-					current_cycle = cycles.Front()
-				}
-
-				SetCountdown(current_cycle.Value.(Cycle).Countdown())
+				NextCycle()
 			}
 
 			SetCountdown(countdown - 1)
@@ -120,7 +124,10 @@ func main() {
 		}
 	})
 
-	skip_button = widget.NewButtonWithIcon("", skip_icon, func() {})
+	skip_button = widget.NewButtonWithIcon("", skip_icon, func() {
+		NextCycle()
+	})
+
 	stop_button = widget.NewButtonWithIcon("", stop_icon, func() {})
 
 	appWindow.SetContent(
