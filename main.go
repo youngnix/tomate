@@ -34,8 +34,8 @@ func main() {
 
 	cycles := list.New()
 
-	cycles.PushBack(Cycle{length: 1})
-	cycles.PushBack(Cycle{length: 2})
+	cycles.PushBack(Cycle{length: 60})
+	cycles.PushBack(Cycle{length: 10})
 
 	current_cycle := cycles.Front()
 
