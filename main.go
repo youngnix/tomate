@@ -56,6 +56,7 @@ func main() {
 	if err != nil {
 		return
 	}
+
 	skip_icon, err := fyne.LoadResourceFromPath("res/skip_icon.png")
 
 	if err != nil {
@@ -128,7 +129,19 @@ func main() {
 		NextCycle()
 	})
 
-	stop_button = widget.NewButtonWithIcon("", stop_icon, func() {})
+	ResetCycles := func() {
+		current_cycle = cycles.Front()
+
+		SetCountdown(current_cycle.Value.(Cycle).Countdown())
+
+		state = TIMER_STATE_PAUSED
+
+		start_pause_button.SetIcon(start_icon)
+	}
+
+	stop_button = widget.NewButtonWithIcon("", stop_icon, func() {
+		ResetCycles()
+	})
 
 	appWindow.SetContent(
 		container.New(layout.NewCenterLayout(),
