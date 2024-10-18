@@ -22,6 +22,7 @@ const (
 
 type Cycle struct {
 	length uint // for how long the cycle lasts in minutes
+	title  string
 }
 
 func (c Cycle) Countdown() uint {
@@ -34,8 +35,8 @@ func main() {
 
 	cycles := list.New()
 
-	cycles.PushBack(Cycle{length: 60})
-	cycles.PushBack(Cycle{length: 10})
+	cycles.PushBack(Cycle{title: "focus", length: 60})
+	cycles.PushBack(Cycle{title: "break", length: 10})
 
 	current_cycle := cycles.Front()
 
