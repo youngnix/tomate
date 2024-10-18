@@ -64,6 +64,8 @@ func main() {
 		return
 	}
 
+	focus_notification := fyne.NewNotification("Time to Focus", "Focus on your tasks.")
+
 	var countdown uint
 	state := TIMER_STATE_PAUSED
 
@@ -106,6 +108,11 @@ func main() {
 
 			if countdown == 0 {
 				NextCycle()
+				switch current_cycle.Value.(Cycle).title {
+				case "focus":
+					myApp.SendNotification(focus_notification)
+					break
+				}
 			}
 
 			SetCountdown(countdown - 1)
