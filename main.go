@@ -191,9 +191,7 @@ func main() {
 		}
 	})
 
-	skip_button = widget.NewButtonWithIcon("", skip_icon, func() {
-		NextCycle()
-	})
+	skip_button = widget.NewButtonWithIcon("", skip_icon, NextCycle)
 
 	ResetCycles := func() {
 		current_cycle = cycles.Front()
@@ -205,9 +203,7 @@ func main() {
 		start_pause_button.SetIcon(start_icon)
 	}
 
-	stop_button = widget.NewButtonWithIcon("", stop_icon, func() {
-		ResetCycles()
-	})
+	stop_button = widget.NewButtonWithIcon("", stop_icon, ResetCycles)
 
 	appWindow.SetContent(
 		container.NewCenter(
