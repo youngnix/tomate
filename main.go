@@ -12,7 +12,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/speaker"
@@ -214,10 +213,12 @@ func main() {
 		container.NewCenter(
 			container.NewVBox(
 				countdown_label,
-				container.NewHBox(
-					start_pause_button,
-					skip_button,
-					stop_button,
+				container.NewCenter(
+					container.NewHBox(
+						start_pause_button,
+						skip_button,
+						stop_button,
+					),
 				),
 			),
 		),
