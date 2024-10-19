@@ -211,10 +211,10 @@ func main() {
 	})
 
 	appWindow.SetContent(
-		container.New(layout.NewCenterLayout(),
-			container.New(layout.NewVBoxLayout(),
+		container.NewCenter(
+			container.NewVBox(
 				countdown_label,
-				container.New(layout.NewHBoxLayout(),
+				container.NewHBox(
 					start_pause_button,
 					skip_button,
 					stop_button,
