@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"image/color"
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -14,6 +15,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/gopxl/beep"
+	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/wav"
 )
 
 const (
@@ -28,6 +31,40 @@ type Cycle struct {
 
 func (c Cycle) Countdown() uint {
 	return c.length * 60
+}
+
+type Sound struct {
+	streamer beep.StreamSeekCloser
+	format   beep.Format
+}
+
+func NewSound(path string) (*Sound, error) {
+	fp, err := os.Open(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	streamer, format, err := wav.Decode(fp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Sound{
+		streamer,
+		format,
+	}, nil
+}
+
+func (s *Sound) Play() {
+	go func() {
+		speaker.PlayAndWait(s.streamer)
+	}()
+}
+
+func (s *Sound) Close() {
+	s.streamer.Close()
 }
 
 func main() {
@@ -67,6 +104,21 @@ func main() {
 
 	focus_notification := fyne.NewNotification("Time to Focus", "Focus on your tasks.")
 	break_notification := fyne.NewNotification("Break Time", "Take a break. Relax and hydrate.")
+
+	focus_sound, err := NewSound("res/chime_sound.wav")
+	if err != nil {
+		panic(err)
+	}
+
+	rest_sound, err := NewSound("res/chime_sound_slow.wav")
+	if err != nil {
+		panic(err)
+	}
+
+	defer focus_sound.Close()
+	defer rest_sound.Close()
+
+	speaker.Init(focus_sound.format.SampleRate, focus_sound.format.SampleRate.N(time.Second/10))
 
 	var countdown uint
 	state := TIMER_STATE_PAUSED
@@ -113,9 +165,11 @@ func main() {
 				switch current_cycle.Value.(Cycle).title {
 				case "break":
 					myApp.SendNotification(break_notification)
+					rest_sound.Play()
 					break
 				case "focus":
 					myApp.SendNotification(focus_notification)
+					focus_sound.Play()
 					break
 				}
 			}
