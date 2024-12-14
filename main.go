@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"image/color"
+	"math"
 	"os"
 	"time"
 
@@ -24,12 +25,12 @@ const (
 )
 
 type Cycle struct {
-	length uint // for how long the cycle lasts in minutes
+	length float32
 	title  string
 }
 
-func (c Cycle) Countdown() uint {
-	return c.length * 60
+func (c Cycle) Countdown() float32 {
+	return c.length * 60.0
 }
 
 type Sound struct {
@@ -66,78 +67,120 @@ func (s *Sound) Close() {
 	s.streamer.Close()
 }
 
+var (
+	countdown          float32 = 0
+	countdown_string   binding.String
+	current_cycle      *list.Element
+	cycles             *list.List
+	state              uint = TIMER_STATE_PAUSED
+	myApp              fyne.App
+	focus_notification *fyne.Notification
+	break_notification *fyne.Notification
+	focus_sound        *Sound
+	rest_sound         *Sound
+	start_icon         fyne.Resource
+	pause_icon         fyne.Resource
+	stop_icon          fyne.Resource
+	skip_icon          fyne.Resource
+)
+
+func init() {
+	var err error
+
+	focus_sound, err = NewSound("res/chime_sound.wav")
+	if err != nil {
+		panic(err)
+	}
+
+	rest_sound, err = NewSound("res/chime_sound_slow.wav")
+	if err != nil {
+		panic(err)
+	}
+
+	start_icon, err = fyne.LoadResourceFromPath("res/start_icon.png")
+
+	if err != nil {
+		return
+	}
+
+	pause_icon, err = fyne.LoadResourceFromPath("res/pause_icon.png")
+
+	if err != nil {
+		return
+	}
+
+	stop_icon, err = fyne.LoadResourceFromPath("res/stop_icon.png")
+
+	if err != nil {
+		return
+	}
+
+	skip_icon, err = fyne.LoadResourceFromPath("res/skip_icon.png")
+
+	if err != nil {
+		return
+	}
+
+	focus_notification = fyne.NewNotification("Time to Focus", "Focus on your tasks.")
+	break_notification = fyne.NewNotification("Break Time", "Take a break. Relax and hydrate.")
+}
+
+func SetCountdown(c float32) {
+	countdown = c
+	countdown_string.Set(fmt.Sprintf("%02f:%02f", countdown/60, math.Mod(float64(countdown), 60)))
+}
+
+func NextCycle() {
+	if current_cycle.Next() != nil {
+		current_cycle = current_cycle.Next()
+	} else {
+		current_cycle = cycles.Front()
+	}
+
+	SetCountdown(current_cycle.Value.(Cycle).Countdown())
+}
+
+func Countdown() {
+	for range time.Tick(time.Second) {
+		if state != TIMER_STATE_RUNNING {
+			return
+		}
+
+		if countdown == 0 {
+			NextCycle()
+			switch current_cycle.Value.(Cycle).title {
+			case "break":
+				myApp.SendNotification(break_notification)
+				rest_sound.Play()
+				break
+			case "focus":
+				myApp.SendNotification(focus_notification)
+				focus_sound.Play()
+				break
+			}
+		}
+
+		SetCountdown(countdown - 1)
+	}
+}
+
 func main() {
-	myApp := app.New()
+	defer focus_sound.Close()
+	defer rest_sound.Close()
+
+	myApp = app.New()
 	appWindow := myApp.NewWindow("Tomate")
 
-	cycles := list.New()
+	cycles = list.New()
 
 	cycles.PushBack(Cycle{title: "focus", length: 60})
 	cycles.PushBack(Cycle{title: "break", length: 10})
 
-	current_cycle := cycles.Front()
-
-	start_icon, err := fyne.LoadResourceFromPath("res/start_icon.png")
-
-	if err != nil {
-		return
-	}
-
-	pause_icon, err := fyne.LoadResourceFromPath("res/pause_icon.png")
-
-	if err != nil {
-		return
-	}
-
-	stop_icon, err := fyne.LoadResourceFromPath("res/stop_icon.png")
-
-	if err != nil {
-		return
-	}
-
-	skip_icon, err := fyne.LoadResourceFromPath("res/skip_icon.png")
-
-	if err != nil {
-		return
-	}
-
-	focus_notification := fyne.NewNotification("Time to Focus", "Focus on your tasks.")
-	break_notification := fyne.NewNotification("Break Time", "Take a break. Relax and hydrate.")
-
-	focus_sound, err := NewSound("res/chime_sound.wav")
-	if err != nil {
-		panic(err)
-	}
-
-	rest_sound, err := NewSound("res/chime_sound_slow.wav")
-	if err != nil {
-		panic(err)
-	}
-
-	defer focus_sound.Close()
-	defer rest_sound.Close()
+	current_cycle = cycles.Front()
 
 	speaker.Init(focus_sound.format.SampleRate, focus_sound.format.SampleRate.N(time.Second/10))
 
-	var countdown uint
-	state := TIMER_STATE_PAUSED
-
-	countdown_string := binding.NewString()
-
-	SetCountdown := func(c uint) {
-		countdown = c
-		countdown_string.Set(fmt.Sprintf("%02d:%02d", countdown/60, countdown%60))
-	}
-
-	NextCycle := func() {
-		if current_cycle.Next() != nil {
-			current_cycle = current_cycle.Next()
-		} else {
-			current_cycle = cycles.Front()
-		}
-
-		SetCountdown(current_cycle.Value.(Cycle).Countdown())
-	}
+	countdown_string = binding.NewString()
 
 	SetCountdown(current_cycle.Value.(Cycle).Countdown())
 
@@ -153,36 +196,12 @@ func main() {
 		countdown_label.Refresh()
 	}))
 
-	countdown_func := func() {
-		for range time.Tick(time.Second) {
-			if state != TIMER_STATE_RUNNING {
-				return
-			}
-
-			if countdown == 0 {
-				NextCycle()
-				switch current_cycle.Value.(Cycle).title {
-				case "break":
-					myApp.SendNotification(break_notification)
-					rest_sound.Play()
-					break
-				case "focus":
-					myApp.SendNotification(focus_notification)
-					focus_sound.Play()
-					break
-				}
-			}
-
-			SetCountdown(countdown - 1)
-		}
-	}
-
 	start_pause_button = widget.NewButtonWithIcon("", start_icon, func() {
 		switch state {
 		case TIMER_STATE_PAUSED:
 			state = TIMER_STATE_RUNNING
 			start_pause_button.SetIcon(pause_icon)
-			go countdown_func()
+			go Countdown()
 			break
 		case TIMER_STATE_RUNNING:
 			state = TIMER_STATE_PAUSED
