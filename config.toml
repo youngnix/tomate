@@ -1,0 +1,14 @@
+bell = true
+notify = true
+
+[[cycles]]
+title = "Focus"
+duration = "1h"
+notification.title = "Time to Focus"
+notification.content = "My life, take notes"
+
+[[cycles]]
+title = "Rest"
+duration = "15m"
+notification.title = "Time to Relax"
+notification.content = "My life, take notes"
